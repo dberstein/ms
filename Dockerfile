@@ -8,6 +8,7 @@ RUN apk update \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
+# build mapserver
 RUN apk add --update \
      alpine-sdk ca-certificates cairo cmake fcgi freetype fribidi gdal geos giflib harfbuzz harfbuzz-cairo jpeg libjpeg libpq libxml2 libzip proj protobuf protobuf-c unzip \
      cairo-dev fcgi-dev freetype-dev fribidi-dev gdal-dev geos-dev giflib-dev harfbuzz-dev jpeg-dev libpq-dev libxml2-dev libzip-dev proj-dev protobuf-c-dev \
@@ -25,9 +26,12 @@ FROM builder AS runtime
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
-ENV MAPSERVER_CONFIG_FILE=/etc/ms.conf
-COPY ms.conf /etc/ms.conf
+# configure mapserver
+ARG MAPSERVER_CONFIG_FILE=/etc/ms.conf
+ENV MAPSERVER_CONFIG_FILE=${MAPSERVER_CONFIG_FILE}
+COPY ms.conf ${MAPSERVER_CONFIG_FILE}
 
+# configure apache
 RUN apk add --update apache2 apache2-utils \
  && echo 'LANG="en_US.utf8"' > /etc/locale.conf \
  && ln -s $(which mapserv) /var/www/localhost/cgi-bin \
