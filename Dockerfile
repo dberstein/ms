@@ -4,7 +4,8 @@ ARG MS_VER=8.4.0
 
 RUN apk update \
  && apk add bash curl wget \
- && apk upgrade
+ && apk upgrade \
+ && echo 'LANG="en_US.utf8"' > /etc/locale.conf
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
@@ -27,21 +28,15 @@ FROM builder AS runtime
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 # configure mapserver
-ARG MAPSERVER_CONFIG_FILE=/etc/ms.conf
+ARG MAPSERVER_CONFIG_FILE=/etc/ms.map
 ENV MAPSERVER_CONFIG_FILE=${MAPSERVER_CONFIG_FILE}
-COPY ms.conf ${MAPSERVER_CONFIG_FILE}
+COPY ms.map ${MAPSERVER_CONFIG_FILE}
 
 # configure apache
-RUN apk add --update apache2 apache2-utils \
- && echo 'LANG="en_US.utf8"' > /etc/locale.conf \
+COPY ms.conf /etc/apache2/conf.d/
+RUN apk add apache2 apache2-utils \
  && ln -s $(which mapserv) /var/www/localhost/cgi-bin \
- && sed -Ei'' 's/#(LoadModule cgid?_module modules\/mod_cgid?\.so)/\1/g' /etc/apache2/httpd.conf \
- && printf ' \n\
-<Directory "/var/www/localhost/cgi-bin"> \n\
-    AllowOverride None \n\
-    Options +ExecCGI -MultiViews -SymLinksIfOwnerMatch +FollowSymLinks \n\
-    Require all granted \n\
-</Directory> \n' > /etc/apache2/conf.d/ms.conf
+ && sed -Ei'' 's/#(LoadModule cgid?_module modules\/mod_cgid?\.so)/\1/g' /etc/apache2/httpd.conf
 
 ENTRYPOINT ["sh", "-c"]
 CMD ["httpd -k start && sh"]
