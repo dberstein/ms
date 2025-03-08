@@ -33,10 +33,10 @@ ENV MAPSERVER_CONFIG_FILE=${MAPSERVER_CONFIG_FILE}
 COPY ms.map ${MAPSERVER_CONFIG_FILE}
 
 # configure apache
-COPY ms.conf /etc/apache2/conf.d/
 RUN apk add apache2 apache2-utils \
  && ln -s $(which mapserv) /var/www/localhost/cgi-bin \
  && sed -Ei'' 's/#(LoadModule cgid?_module modules\/mod_cgid?\.so)/\1/g' /etc/apache2/httpd.conf
+COPY ms.conf /etc/apache2/conf.d/
 
 ENTRYPOINT ["sh", "-c"]
 CMD ["httpd -k start && sh"]
