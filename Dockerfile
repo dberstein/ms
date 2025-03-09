@@ -30,15 +30,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 # configure mapserver
 ARG MAPSERVER_CONFIG_FILE=/usr/local/etc/mapserver.conf
 ENV MAPSERVER_CONFIG_FILE=${MAPSERVER_CONFIG_FILE}
-COPY mapserver/ms.conf ${MAPSERVER_CONFIG_FILE}
+COPY etc/mapserver/mapserver.conf ${MAPSERVER_CONFIG_FILE}
 WORKDIR /maps
-COPY mapserver/*.map .
+COPY maps/*.map .
 
 # configure apache
 RUN apk add apache2 apache2-utils \
  && ln -s $(which mapserv) /var/www/localhost/cgi-bin \
  && sed -Ei'' 's/#(LoadModule cgid?_module modules\/mod_cgid?\.so)/\1/g' /etc/apache2/httpd.conf
-COPY apache/ms.conf /etc/apache2/conf.d/
+COPY etc/apache2/conf.d/mapserver.conf /etc/apache2/conf.d/
 
 
 ENTRYPOINT ["sh", "-c"]
