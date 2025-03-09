@@ -2,7 +2,7 @@ IMAGE=ms:dev
 
 .PHONY: build
 build:
-	@time docker build -t $(IMAGE) .
+	@time docker build --progress=plain -t $(IMAGE) .
 
 .PHONY: run
 run: build

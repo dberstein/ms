@@ -28,15 +28,18 @@ FROM builder AS runtime
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 # configure mapserver
-ARG MAPSERVER_CONFIG_FILE=/etc/ms.map
+ARG MAPSERVER_CONFIG_FILE=/usr/local/etc/mapserver.conf
 ENV MAPSERVER_CONFIG_FILE=${MAPSERVER_CONFIG_FILE}
-COPY ms.map ${MAPSERVER_CONFIG_FILE}
+COPY mapserver/ms.conf ${MAPSERVER_CONFIG_FILE}
+WORKDIR /maps
+COPY mapserver/*.map .
 
 # configure apache
 RUN apk add apache2 apache2-utils \
  && ln -s $(which mapserv) /var/www/localhost/cgi-bin \
  && sed -Ei'' 's/#(LoadModule cgid?_module modules\/mod_cgid?\.so)/\1/g' /etc/apache2/httpd.conf
-COPY ms.conf /etc/apache2/conf.d/
+COPY apache/ms.conf /etc/apache2/conf.d/
+
 
 ENTRYPOINT ["sh", "-c"]
 CMD ["httpd -k start && sh"]
